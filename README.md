@@ -30,8 +30,8 @@ model, loss_fn, optimizer, scheduler = CNN_init()
 
 ## Models
 
-| Name | Architecture | Optimizer | Saved as |
-|------|-------------|-----------|----------|
+| Name | Architecture | Optimizer |
+|------|-------------|-----------|
 | `NeuralNetwork` | 3-layer MLP (512-512-10) | SGD |
 | `CNN` | 3× Conv2d + BN + MaxPool → FC(256) → 10 | AdamW |
 
