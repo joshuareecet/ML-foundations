@@ -3,15 +3,18 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from data import get_FMNIST_data
-from neuralnetwork import NeuralNetwork, CNN, CNN2
+from neuralnetwork import NeuralNetwork, CNN, CNN2, ResNet
 from utils.setup import device, models_dir
-
+import time
 # Training hyperparameters -----------------------------------------------------------------------------------------------------
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 64
 EPOCHS = 50
-MODEL_NAME = "FMNIST_MODEL_CONV_V3"
-model_load_path = models_dir / f"{MODEL_NAME}_best.pt"
+DATASET_NAME = f"FMNIST"
+DEBUG = True
+
+if DEBUG:
+	torch.autograd.set_detect_anomaly(True)
 
 # Train and test loops ---------------------------------------------------------------------------------------------------------
 def train_loop(
@@ -69,6 +72,7 @@ def val_loop(dataloader: DataLoader, model: torch.nn.Module, loss_fn: torch.nn.M
 # Model initialiser functions ---------------------------------------------------------------------------------------------------------
 def load_model(model: nn.Module):
 	"""Load saved weights into model from model_name path. No-op if file doesn't exist."""
+	model_load_path = models_dir / f"{DATASET_NAME}{model.model_name()}_best.pt"
 	try:
 		if model_load_path.exists():
 			model.load_state_dict(torch.load(model_load_path,weights_only=True))
@@ -76,7 +80,7 @@ def load_model(model: nn.Module):
 			print("No prev model loaded..")
 	except Exception as e:
 		print(e)
-		print(f"Couldn't load model: {MODEL_NAME}	\nAt path: {model_load_path}")
+		print(f"Couldn't load model: {DATASET_NAME}{model.model_name()}_best.pt \nAt path: {model_load_path}")
 		raise e
 
 def model_init(
@@ -97,7 +101,7 @@ def model_init(
 
 # Train loop -----------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
-	save_path = model_load_path
+	
 
 	# Loading Data 
 	FMNIST_training_data, FMNIST_val_data, FMNIST_test_data = get_FMNIST_data()
@@ -107,7 +111,9 @@ if __name__ == "__main__":
 	test_dataloader = DataLoader(FMNIST_test_data, batch_size=BATCH_SIZE, num_workers=2, persistent_workers=True)
 	
 	# Initialising Model
-	model, loss_fn, optimizer, scheduler = model_init(CNN2)
+	model, loss_fn, optimizer, scheduler = model_init(ResNet)
+	save_path = models_dir / f"{DATASET_NAME}{model.model_name()}_best.pt"
+	
 	print(f"Using device: {device}")
 	prev_loss = None
 	# Run Training 
@@ -126,4 +132,4 @@ if __name__ == "__main__":
 	# Evaluate on test set 
 	test_loss, correct = val_loop(test_dataloader, model, loss_fn)
 	print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
-	torch.save(model.state_dict(), models_dir / f"{MODEL_NAME}_last.pt")
+	torch.save(model.state_dict(), models_dir / f"{DATASET_NAME}_last.pt")
