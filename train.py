@@ -3,7 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from data import get_FMNIST_data
-from neuralnetwork import NeuralNetwork, CNN, CNN2, ResNet
+from neuralnetwork import NeuralNetwork, CNN, CNN2, MiniResNet
 from utils.setup import device, models_dir
 import time
 # Training hyperparameters -----------------------------------------------------------------------------------------------------
@@ -102,7 +102,6 @@ def model_init(
 # Train loop -----------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
 	
-
 	# Loading Data 
 	FMNIST_training_data, FMNIST_val_data, FMNIST_test_data = get_FMNIST_data()
 
@@ -111,11 +110,11 @@ if __name__ == "__main__":
 	test_dataloader = DataLoader(FMNIST_test_data, batch_size=BATCH_SIZE, num_workers=2, persistent_workers=True)
 	
 	# Initialising Model
-	model, loss_fn, optimizer, scheduler = model_init(ResNet)
+	model, loss_fn, optimizer, scheduler = model_init(MiniResNet)
 	save_path = models_dir / f"{DATASET_NAME}{model.model_name()}_best.pt"
 	
 	print(f"Using device: {device}")
-	prev_loss = None
+	best_loss = None
 	# Run Training 
 	for t in range(EPOCHS):
 		print(f"Epoch {t+1}\n-------------------------------")
@@ -123,9 +122,9 @@ if __name__ == "__main__":
 		valid_loss, correct = val_loop(val_dataloader, model, loss_fn)
 		scheduler.step()
 		print(f"Validation Error: \n Accuracy: {(100*correct):>0.1f}% \nTrain loss: {train_loss:>8f} \nValid loss: {valid_loss:>8f} \n")
-		if (prev_loss is None ) or (valid_loss < prev_loss):
+		if (best_loss is None) or (valid_loss < best_loss):
 			torch.save(model.state_dict(), save_path)
-		prev_loss = valid_loss
+			best_loss = valid_loss
 
 	print("Done!")
 	

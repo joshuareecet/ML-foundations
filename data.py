@@ -21,6 +21,7 @@ default_train_transform = [
 		v2.RandomCrop(28,padding=4)
 	]
 
+
 # Custom Dataset Classes ---------------------------------------------------------------------------------------------------------
 
 class CustomImageDataset(Dataset):

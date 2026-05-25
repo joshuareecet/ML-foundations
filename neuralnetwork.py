@@ -100,9 +100,14 @@ class CNN2(nn.Module):
 		self.flatten = nn.Flatten()
 		self.dropout = nn.Dropout2d(0.15)
 
+
 		self.conv1out = 32
-		self.conv1 = nn.Conv2d(in_channels,self.conv1out,kernel_size=3,stride=1,padding=1)
-		self.bn1 = nn.BatchNorm2d(self.conv1out)
+
+		self.block1 = nn.Sequential(
+			nn.Conv2d(in_channels,self.conv1out,kernel_size=3,stride=1,padding=1),
+			nn.BatchNorm2d(self.conv1out),
+			nn.ReLU(),
+		)
 
 		self.conv2out = self.conv1out*2
 		self.block2 = ConvBNReLu(self.conv1out,self.conv2out,kernel_size=3,stride=2,padding=1)
@@ -116,12 +121,9 @@ class CNN2(nn.Module):
 
 
 	def forward(self, x):
-		x = nn.functional.relu(self.bn1(self.conv1(x)))
-		# save x as y
-
+		x = self.block1(x)
 		x = self.block2(x)
 		x = self.dropout(x)
-		# resize y, add to x ?
 		x = self.block3(x)
 		x = self.dropout(x)
 
@@ -155,13 +157,12 @@ class ResBlock(nn.Module):
 	def forward(self, x: torch.Tensor):
 		res = self.project(x)
 		x = self.block1(x)
-		x = self.relu(x)
 		x = self.block2(x)
 		x = x + res
 		x = self.relu(x)
 		return x
 
-class ResNet(nn.Module):
+class MiniResNet(nn.Module):
 	"""Deeper CNN using Conv_BN_ReLu blocks with stride-2 downsampling instead of maxpool."""
 
 	def __init__(self,in_channels=1,num_classes=10,imgsz = (28,28)):
@@ -186,13 +187,14 @@ class ResNet(nn.Module):
 
 	def forward(self, x):
 		x = self.block1(x)
-		x = self.dropout(x)
+		#x = self.dropout(x)
 		x = self.block2(x)
-		x = self.dropout(x)
+		#x = self.dropout(x)
 		x = self.block3(x)
 		
 		x = self.flatten(x)
 		x = self.fully_connected(x)
+		x = self.relu(x)
 		x = self.output(x)
 
 		return x
@@ -210,5 +212,5 @@ if __name__ == "__main__":
 	model = CNN2().to(device)
 	print(model)
 
-	model = ResNet().to(device)
+	model = MiniResNet().to(device)
 	print(model)
