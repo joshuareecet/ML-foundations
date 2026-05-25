@@ -124,4 +124,15 @@ def get_dataset(dataset: datasets.VisionDataset = datasets.FashionMNIST) -> tupl
 		transform=v2.Compose(default_test_transform)
 	)
 
-	return train_data,val_data, test_data
+	return train_data, val_data, test_data
+
+def get_dataset_info(train_data: TransformedSubset) -> tuple[int, int]:
+	"""Return (in_channels, num_classes) by inspecting a sample and the underlying dataset."""
+	sample_x, _ = train_data[0]
+	in_channels = sample_x.shape[0]
+	raw_dataset = train_data.data.dataset
+	if hasattr(raw_dataset, "classes"):
+		num_classes = len(raw_dataset.classes)
+	else:
+		num_classes = len(set(get_labels(raw_dataset).tolist()))
+	return in_channels, num_classes

@@ -1,8 +1,9 @@
+import inspect
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from data import get_dataset
+from data import get_dataset, get_dataset_info
 from torchvision import datasets
 
 from neuralnetwork import SimpleMLP, SimpleCNN, StridedCNN, MiniResNet, Res50
@@ -90,12 +91,20 @@ def load_model(model: nn.Module):
 
 def model_init(
 		model_type: nn.Module,
-		loss_fn_ = nn.CrossEntropyLoss, 
-		optimizer_ = torch.optim.AdamW, 
+		in_channels: int = 1,
+		num_classes: int = 10,
+		loss_fn_ = nn.CrossEntropyLoss,
+		optimizer_ = torch.optim.AdamW,
 		scheduler_ = torch.optim.lr_scheduler.LinearLR
 ):
 	"""Build and return (model, loss_fn, optimizer, scheduler) for CNN."""
-	model = model_type().to(device).to(memory_format=torch.channels_last)
+	sig = inspect.signature(model_type.__init__).parameters
+	kwargs = {}
+	if "in_channels" in sig:
+		kwargs["in_channels"] = in_channels
+	if "num_classes" in sig:
+		kwargs["num_classes"] = num_classes
+	model = model_type(**kwargs).to(device).to(memory_format=torch.channels_last)
 	load_model(model)
 
 	loss_fn = loss_fn_()
@@ -109,13 +118,14 @@ if __name__ == "__main__":
 	
 	# Loading Data 
 	train_data, val_data, test_data = get_dataset(DATASET)
+	in_channels, num_classes = get_dataset_info(train_data)
 
 	train_dataloader = DataLoader(train_data, batch_size=BATCH_SIZE, num_workers=2, persistent_workers=True, shuffle=True)
 	val_dataloader = DataLoader(val_data, batch_size=BATCH_SIZE, num_workers=2, persistent_workers=True)
 	test_dataloader = DataLoader(test_data, batch_size=BATCH_SIZE, num_workers=2, persistent_workers=True)
-	
+
 	# Initialising Model
-	model, loss_fn, optimizer, scheduler = model_init(MODEL)
+	model, loss_fn, optimizer, scheduler = model_init(MODEL, in_channels=in_channels, num_classes=num_classes)
 	save_path = models_dir / f"{DATASET_NAME}{model.model_name()}_best.pt"
 	
 	print(f"Using device: {device}")
