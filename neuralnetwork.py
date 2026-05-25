@@ -99,12 +99,12 @@ class ResBlock(nn.Module):
 class SimpleMLP(nn.Module):
 	"""Simple 3-layer MLP for image classification."""
 
-	def __init__(self, num_classes = 10):
+	def __init__(self, in_channels=1, num_classes = 10, imgsz = (28,28), **kwargs):
 		super().__init__()
 		self.flatten = nn.Flatten()
-
+		input = in_channels * imgsz[0] * imgsz[1]
 		self.linear_relu_stack = nn.Sequential(
-			nn.Linear(28*28, 512),
+			nn.Linear(input, 512),
 			nn.ReLU(),
 			nn.Linear(512,512),
 			nn.ReLU(),
@@ -122,7 +122,7 @@ class SimpleMLP(nn.Module):
 class SimpleCNN(nn.Module):
 	"""Two conv blocks (conv → BN → ReLU → maxpool) followed by two fully connected layers."""
 
-	def __init__(self, in_channels = 1, num_classes = 10, imgsz = (28,28)):
+	def __init__(self, in_channels = 1, num_classes = 10, imgsz = (28,28), *args, **kwargs):
 		super().__init__()
 		self.flatten = nn.Flatten(1,3)
 
@@ -166,13 +166,12 @@ class SimpleCNN(nn.Module):
 class StridedCNN(nn.Module):
 	"""Deeper CNN using Conv_BN_ReLu blocks with stride-2 downsampling instead of maxpool."""
 
-	def __init__(self,in_channels=1,num_classes=10,imgsz = (28,28)):
+	def __init__(self,in_channels=1,num_classes=10,imgsz = (28,28), *args, **kwargs):
 		super().__init__()
 		self.relu = nn.ReLU()
 
 		self.flatten = nn.Flatten()
 		self.dropout = nn.Dropout2d(0.15)
-
 
 		self.conv1out = 32
 
@@ -211,7 +210,7 @@ class StridedCNN(nn.Module):
 class MiniResNet(nn.Module):
 	"""Deeper CNN using Conv_BN_ReLu blocks with stride-2 downsampling instead of maxpool."""
 
-	def __init__(self,in_channels=1,num_classes=10,imgsz = (28,28)):
+	def __init__(self,in_channels=1,num_classes=10,imgsz = (28,28), *args, **kwargs):
 		super().__init__()
 
 		self.flatten = nn.Flatten()
@@ -249,7 +248,7 @@ class MiniResNet(nn.Module):
 		return "ResNet"
 
 class Res50(nn.Module):
-	def __init__(self, in_channels=1, num_classes=10, imgsz = (28,28)):
+	def __init__(self, in_channels=1, num_classes=10, imgsz = (28,28), *args, **kwargs):
 		super().__init__()
 		
 		self.flatten = nn.Flatten()
