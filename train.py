@@ -3,7 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from data import get_FMNIST_data
-from neuralnetwork import NeuralNetwork, CNN, CNN2, MiniResNet
+from neuralnetwork import SimpleMLP, SimpleCNN, StridedCNN, MiniResNet, Res50
 from utils.setup import device, models_dir
 import time
 # Training hyperparameters -----------------------------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 	test_dataloader = DataLoader(FMNIST_test_data, batch_size=BATCH_SIZE, num_workers=2, persistent_workers=True)
 	
 	# Initialising Model
-	model, loss_fn, optimizer, scheduler = model_init(MiniResNet)
+	model, loss_fn, optimizer, scheduler = model_init(Res50)
 	save_path = models_dir / f"{DATASET_NAME}{model.model_name()}_best.pt"
 	
 	print(f"Using device: {device}")
